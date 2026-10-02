@@ -14,6 +14,10 @@ export async function api<T>(path: string, init?: RequestInit & { json?: unknown
     headers: json !== undefined ? { 'Content-Type': 'application/json' } : undefined,
     body: json !== undefined ? JSON.stringify(json) : rest.body,
   });
+  if (res.status === 401 && !path.startsWith('/auth/')) {
+    // Session expirée ou absente : l'écran de connexion prend le relais.
+    window.dispatchEvent(new Event('kooka:unauthorized'));
+  }
   if (res.status === 204) return undefined as T;
   const body = await res.json().catch(() => ({}));
   if (!res.ok) throw new ApiError(res.status, body.error ?? 'Une erreur est survenue');

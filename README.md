@@ -32,7 +32,8 @@ apps/
   web/      React 19 + Vite + Tailwind 4 — interface mobile-first
 packages/
   shared/   Schémas Zod et types partagés entre le front et l'API
-docs/       Choix techniques et feuille de route
+deploy/     Caddyfile et scripts de mise à jour / sauvegarde
+docs/       Choix techniques, feuille de route, déploiement
 ```
 
-Voir [`docs/architecture.md`](docs/architecture.md) pour les choix techniques et [`docs/roadmap.md`](docs/roadmap.md) pour l'avancement.
+Voir [`docs/architecture.md`](docs/architecture.md) pour les choix techniques, [`docs/roadmap.md`](docs/roadmap.md) pour l'avancement et [`docs/deploiement.md`](docs/deploiement.md) pour la mise en ligne sur un VPS (Docker + Caddy).

@@ -7,10 +7,11 @@ import {
   SKILL_LABELS,
   type Preferences,
 } from '@kooka/shared';
-import { Check, Minus, Plus } from 'lucide-react';
+import { Check, LogOut, Minus, Plus } from 'lucide-react';
 import { useEffect, useState, type ReactNode } from 'react';
 import { PageHeader } from '../components/PageHeader';
 import { TagInput } from '../components/TagInput';
+import { useAuth, useLogout } from '../hooks/useAuth';
 import { usePreferences, useUpdatePreferences } from '../hooks/usePreferences';
 
 const INSTRUCTIONS_EXAMPLE =
@@ -19,6 +20,8 @@ const INSTRUCTIONS_EXAMPLE =
 export function PreferencesPage() {
   const { preferences, isSuccess } = usePreferences();
   const update = useUpdatePreferences();
+  const { data: auth } = useAuth();
+  const logout = useLogout();
   const [draft, setDraft] = useState<Preferences>(preferences);
 
   // Le brouillon part des préférences enregistrées, une fois chargées.
@@ -150,6 +153,15 @@ export function PreferencesPage() {
           </button>
           {update.error && <p className="mt-2 text-center text-sm text-tomato-dark">{update.error.message}</p>}
         </div>
+      )}
+
+      {auth?.required && (
+        <button
+          onClick={() => logout.mutate()}
+          className="mx-auto mt-10 flex items-center gap-2 text-sm font-medium text-muted"
+        >
+          <LogOut size={16} /> Se déconnecter
+        </button>
       )}
     </>
   );

@@ -16,7 +16,7 @@ La boucle à valider : **Inventaire → Suggestions → Choix → Recette.**
 - [x] **9. Préférences** — personnes, temps, niveau, découverte, vaisselle, cuisines, ingrédients aimés / à éviter, instructions libres
 - [x] **10. Mode cuisine** — une étape par écran, minuteurs persistants, écran maintenu allumé, plusieurs recettes en parallèle (meal prep) avec reprise, questions ponctuelles à l'IA, historique des recettes cuisinées
 - [x] **11. PWA (base)** — manifest et icônes : installable sur l'écran d'accueil
-- [ ] **12. Mise en ligne** — héberger l'API et le front pour utiliser Kooka sans ordinateur allumé (avec une protection d'accès)
+- [x] **12. Mise en ligne** — image Docker (API + front), Caddy (HTTPS), mot de passe, limite d'appels IA, sauvegardes : voir `deploiement.md`
 
 ## Petites idées à forte valeur (à décider)
 

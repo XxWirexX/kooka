@@ -91,3 +91,10 @@ Code : `apps/api/src/modules/ai/` (fournisseur), `suggestions/` et `recipes/` (r
 - `cooking_sessions` : une ligne par préparation (recette figée en JSON, nombre de personnes, étape courante, dates). Plusieurs peuvent être actives : on les quitte et on y revient (meal prep). Terminer → historique ; abandonner → suppression.
 - Les minuteurs vivent côté navigateur (`lib/timers.ts`) et reposent sur une heure de fin : ils survivent aux changements de page, de recette et aux rechargements. L'alarme (son + vibration) est montée à la racine de l'app.
 - « Une question ? » : `POST /api/cooking/:id/ask`, avec la recette, l'étape courante et au plus 6 échanges précédents. Réponse courte (schéma `{ answer }`), modèle léger par défaut (`AI_MODEL_ASK`). Volontairement limité : pas de conversation libre.
+
+## Production
+
+- Une seule image Docker : Express sert l'API et le front compilé (`apps/web/dist`), avec un renvoi vers `index.html` pour les routes de l'app. Caddy termine le HTTPS devant.
+- **Accès** (`modules/auth`) : mot de passe unique (`APP_PASSWORD`, obligatoire en production) ; session = cookie signé HMAC sans état serveur (`<expiration>.<signature>`), `HttpOnly`, `SameSite=Lax`, `Secure` en production, 90 jours. Toutes les routes `/api` sauf `/health` et `/auth/*` exigent la session.
+- **Limites** (`lib/rateLimit.ts`, en mémoire) : 10 tentatives de connexion / 15 min / IP ; `AI_CALLS_PER_HOUR` appels IA par heure.
+- Le TypeScript est exécuté par `tsx` en production aussi (pas d'étape de compilation de l'API) : simple et suffisant pour une instance personnelle.
