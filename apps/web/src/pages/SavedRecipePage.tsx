@@ -2,6 +2,7 @@ import { Trash2 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router';
 import { BackButton } from '../components/BackButton';
 import { RecipeView } from '../components/RecipeView';
+import { useCookingMutations } from '../hooks/useCooking';
 import { useCookbookMutations, useSavedRecipe } from '../hooks/useRecipes';
 
 export function SavedRecipePage() {
@@ -9,6 +10,7 @@ export function SavedRecipePage() {
   const navigate = useNavigate();
   const { data, isLoading, error } = useSavedRecipe(id);
   const { remove } = useCookbookMutations();
+  const { start } = useCookingMutations();
 
   return (
     <>
@@ -29,7 +31,15 @@ export function SavedRecipePage() {
       </div>
       {isLoading && <p className="text-center text-sm text-muted">Chargement…</p>}
       {error && <p className="text-center text-sm text-tomato-dark">{error.message}</p>}
-      {data && <RecipeView recipe={data.recipe} />}
+      {data && (
+        <RecipeView
+          recipe={data.recipe}
+          cookPending={start.isPending}
+          onCook={(servings) =>
+            start.mutate({ recipe: data.recipe, servings }, { onSuccess: (s) => navigate(`/cuisine/${s.id}`) })
+          }
+        />
+      )}
     </>
   );
 }

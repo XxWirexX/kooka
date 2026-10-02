@@ -22,6 +22,8 @@ function loadPrices(): Record<string, [number, number]> {
 
 const prices = loadPrices();
 
+const TASK_LABELS: Record<AiTask, string> = { suggest: 'suggestions', recipe: 'recette', ask: 'question' };
+
 export interface UsageReport {
   task: AiTask;
   model: string;
@@ -45,5 +47,5 @@ export function logUsage(u: UsageReport) {
     `${(u.ms / 1000).toFixed(1)} s`,
     cost !== null ? `≈ ${cost.toFixed(4)} $` : 'coût : définis AI_PRICES',
   ];
-  console.log(`[ai] ${u.task === 'suggest' ? 'suggestions' : 'recette'} · ${u.model} · ${parts.join(' · ')}`);
+  console.log(`[ai] ${TASK_LABELS[u.task]} · ${u.model} · ${parts.join(' · ')}`);
 }

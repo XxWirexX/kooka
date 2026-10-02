@@ -31,6 +31,21 @@ const migrations: string[] = [
     created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
   );
   `,
+  `
+  CREATE TABLE preferences (
+    id   INTEGER PRIMARY KEY CHECK (id = 1),
+    data TEXT NOT NULL
+  );
+  CREATE TABLE cooking_sessions (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    recipe       TEXT    NOT NULL,
+    servings     INTEGER NOT NULL,
+    current_step INTEGER NOT NULL DEFAULT 0,
+    started_at   TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+    updated_at   TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+    finished_at  TEXT
+  );
+  `,
 ];
 
 export function openDatabase(path: string): Db {

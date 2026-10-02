@@ -1,7 +1,9 @@
 import { Bookmark, BookmarkCheck } from 'lucide-react';
-import { useParams } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 import { BackButton } from '../components/BackButton';
 import { RecipeView } from '../components/RecipeView';
+import { useCookingMutations } from '../hooks/useCooking';
+import { usePreferences } from '../hooks/usePreferences';
 import { useCookbookMutations, useGeneratedRecipe } from '../hooks/useRecipes';
 import { recallSuggestion, useFilters } from '../hooks/useSuggestions';
 
@@ -11,8 +13,15 @@ export function RecipePage() {
   const [filters] = useFilters();
   const suggestion = recallSuggestion(id);
   const discovery = filters.ignoreInventory ?? false;
-  const { data: recipe, isLoading, error, refetch } = useGeneratedRecipe(suggestion, discovery);
+  const { preferences, isSuccess: prefsLoaded } = usePreferences();
+  const { data: recipe, isLoading, error, refetch } = useGeneratedRecipe(
+    suggestion,
+    discovery,
+    prefsLoaded ? preferences.servings : null,
+  );
   const { save } = useCookbookMutations();
+  const { start } = useCookingMutations();
+  const navigate = useNavigate();
 
   return (
     <>
@@ -34,7 +43,7 @@ export function RecipePage() {
 
       {!suggestion && <p className="text-center text-sm text-muted">Cette suggestion n'est plus disponible.</p>}
 
-      {suggestion && isLoading && (
+      {suggestion && (isLoading || !prefsLoaded) && (
         <div className="rounded-3xl bg-tomato-soft p-6 text-center">
           <span className="inline-block animate-bounce text-5xl">{suggestion.emoji}</span>
           <h1 className="mt-3 font-display text-2xl font-bold">{suggestion.title}</h1>
@@ -51,7 +60,16 @@ export function RecipePage() {
         </div>
       )}
 
-      {recipe && <RecipeView recipe={recipe} showStatus={!discovery} />}
+      {recipe && (
+        <RecipeView
+          recipe={recipe}
+          showStatus={!discovery}
+          cookPending={start.isPending}
+          onCook={(servings) =>
+            start.mutate({ recipe, servings }, { onSuccess: (s) => navigate(`/cuisine/${s.id}`) })
+          }
+        />
+      )}
     </>
   );
 }

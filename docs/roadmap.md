@@ -12,14 +12,16 @@ La boucle à valider : **Inventaire → Suggestions → Choix → Recette.**
 - [x] **6. Fiche recette** — ingrédients avec leur statut (disponible / inconnu / manquant / facultatif), quantités selon le nombre de portions, temps actif/passif, étapes, remarques
 - [x] **7. Filtres** — temps, type de cuisine, mode découverte (sans inventaire), conservés entre les visites
 - [x] **8. Livre de recettes** — sauvegarde simple, statuts recalculés selon l'inventaire actuel
-- [ ] **À faire avant tout le reste : tester et ajuster les prompts avec la vraie IA** (qualité, diversité, temps de réponse, coût)
-- [ ] **9. Préférences** — quelques préférences structurées + instructions libres
-- [ ] **10. Mode cuisine simple** — une étape par écran, minuteurs basiques
-- [ ] **11. PWA** — manifest, installation sur l'écran d'accueil, écran maintenu allumé en mode cuisine
+- [x] **Premiers tests avec la vraie IA** (GPT) : qualité jugée bonne ; coût réduit (modèle et réflexion par appel, génération uniquement à la demande)
+- [x] **9. Préférences** — personnes, temps, niveau, découverte, vaisselle, cuisines, ingrédients aimés / à éviter, instructions libres
+- [x] **10. Mode cuisine** — une étape par écran, minuteurs persistants, écran maintenu allumé, plusieurs recettes en parallèle (meal prep) avec reprise, questions ponctuelles à l'IA, historique des recettes cuisinées
+- [x] **11. PWA (base)** — manifest et icônes : installable sur l'écran d'accueil
+- [ ] **12. Mise en ligne** — héberger l'API et le front pour utiliser Kooka sans ordinateur allumé (avec une protection d'accès)
 
 ## Petites idées à forte valeur (à décider)
 
-- **Basiques du placard** : une case « j'ai les basiques » (sel, poivre, huile, beurre, farine…) plutôt que de les saisir un par un.
+- ~~Basiques du placard~~ : fait (dans le profil).
+
 - **Mettre à jour l'inventaire après avoir cuisiné** : proposer (sans l'imposer) de marquer les ingrédients utilisés comme « presque fini » ou « plus du tout ».
 
 ## Après le MVP

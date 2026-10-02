@@ -72,3 +72,8 @@ export const aiRecipeSchema = z.object({
     .describe('0 à 3 remarques réellement utiles (quantités incertaines, substitution, astuce). Vide si rien à dire.'),
 });
 export type AiRecipe = z.infer<typeof aiRecipeSchema>;
+
+export const aiAnswerSchema = z.object({
+  answer: z.string().describe('Réponse courte et pratique, 80 mots maximum'),
+});
+export type AiAnswer = z.infer<typeof aiAnswerSchema>;

@@ -1,3 +1,4 @@
+import { DEFAULT_PREFERENCES } from '@kooka/shared';
 import { describe, expect, it, vi } from 'vitest';
 import { createOpenAIAI } from '../src/modules/ai/openai.js';
 
@@ -40,11 +41,11 @@ describe('fournisseur OpenAI', () => {
     const log = vi.spyOn(console, 'log').mockImplementation(() => {});
     const ai = createOpenAIAI({
       apiKey: 'sk-test',
-      config: { suggest: { model: 'gpt-mini', effort: 'minimal' }, recipe: { model: 'gpt-big', effort: 'low' } },
+      config: { suggest: { model: 'gpt-mini', effort: 'minimal' }, recipe: { model: 'gpt-big', effort: 'low' }, ask: { model: 'gpt-mini', effort: 'none' } },
       fetch,
     });
 
-    const res = await ai.suggest({ inventory: [], filters: {}, exclude: [], count: 3 });
+    const res = await ai.suggest({ inventory: [], preferences: DEFAULT_PREFERENCES, filters: {}, exclude: [], count: 3 });
 
     expect(res).toEqual({ suggestions: [] });
     expect(bodies[0]).toMatchObject({ model: 'gpt-mini', reasoning: { effort: 'minimal' } });

@@ -5,5 +5,5 @@ export interface TaskConfig {
   effort: string;
 }
 
-export type AiTask = 'suggest' | 'recipe';
+export type AiTask = 'suggest' | 'recipe' | 'ask';
 export type AiConfig = Record<AiTask, TaskConfig>;

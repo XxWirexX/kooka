@@ -9,21 +9,24 @@ import { annotateIngredients, computeAvailability } from '../../lib/availability
 import { TtlCache, hashKey, withRetry } from '../../lib/cache.js';
 import { AiOutputError, type RecipeAI } from '../ai/index.js';
 import type { AiSuggestions } from '../ai/schemas.js';
-import type { InventoryRepository } from '../inventory/inventory.repository.js';
+import type { Kitchen } from '../../lib/kitchen.js';
 
 const SUGGESTION_COUNT = 3;
 
-export function createSuggestionsService(ai: RecipeAI, inventoryRepo: InventoryRepository) {
+export function createSuggestionsService(ai: RecipeAI, kitchen: Kitchen) {
   const cache = new TtlCache<SuggestionsResponse>(6 * 60 * 60 * 1000);
 
   return {
     async suggest(input: unknown): Promise<SuggestionsResponse> {
       const { filters, exclude } = suggestionsRequestSchema.parse(input);
-      const inventory = filters.ignoreInventory ? [] : inventoryRepo.list();
+      const snap = kitchen.snapshot();
+      const inventory = filters.ignoreInventory ? [] : snap.inventory;
+      const stock = filters.ignoreInventory ? [] : snap.stock;
 
-      // Même inventaire + mêmes filtres + mêmes exclusions → mêmes suggestions, sans rappeler l'IA.
+      // Même inventaire + mêmes préférences + mêmes filtres + mêmes exclusions → mêmes suggestions.
       const key = hashKey({
         inventory: inventory.map((i) => [i.name, i.stockLevel, i.quantity, i.unit]),
+        preferences: snap.preferences,
         filters,
         exclude,
       });
@@ -32,8 +35,14 @@ export function createSuggestionsService(ai: RecipeAI, inventoryRepo: InventoryR
 
       const result = await withRetry(
         async () => {
-          const raw = await ai.suggest({ inventory, filters, exclude, count: SUGGESTION_COUNT });
-          return finalizeSuggestions(raw, inventory, { exclude, maxMinutes: filters.maxMinutes ?? null });
+          const raw = await ai.suggest({
+            inventory,
+            preferences: snap.preferences,
+            filters,
+            exclude,
+            count: SUGGESTION_COUNT,
+          });
+          return finalizeSuggestions(raw, stock, { exclude, maxMinutes: filters.maxMinutes ?? null });
         },
         (err) => err instanceof AiOutputError,
       );

@@ -3,34 +3,36 @@ import { annotateIngredients } from '../../lib/availability.js';
 import { TtlCache, hashKey, withRetry } from '../../lib/cache.js';
 import { AiOutputError, type RecipeAI } from '../ai/index.js';
 import type { AiRecipe } from '../ai/schemas.js';
-import type { InventoryRepository } from '../inventory/inventory.repository.js';
+import type { Kitchen } from '../../lib/kitchen.js';
 
-export function createRecipesService(ai: RecipeAI, inventoryRepo: InventoryRepository) {
+export function createRecipesService(ai: RecipeAI, kitchen: Kitchen) {
   const cache = new TtlCache<Recipe>(24 * 60 * 60 * 1000);
 
   return {
     async generate(input: unknown): Promise<Recipe> {
       const req = recipeRequestSchema.parse(input);
       const ignoreInventory = req.ignoreInventory ?? false;
-      const inventory = inventoryRepo.list();
+      const { inventory, preferences, stock } = kitchen.snapshot();
 
       const key = hashKey({
         suggestion: req.suggestion,
         servings: req.servings,
+        preferences,
         inventory: ignoreInventory ? null : inventory.map((i) => [i.name, i.stockLevel, i.quantity, i.unit]),
       });
       const cached = cache.get(key);
-      if (cached) return { ...cached, ingredients: annotateIngredients(cached.ingredients, inventory) };
+      if (cached) return { ...cached, ingredients: annotateIngredients(cached.ingredients, stock) };
 
       const recipe = await withRetry(
         async () => {
           const raw = await ai.recipe({
             inventory: ignoreInventory ? [] : inventory,
+            preferences,
             suggestion: req.suggestion,
             servings: req.servings,
             ignoreInventory,
           });
-          return finalizeRecipe(raw, req.servings, inventory);
+          return finalizeRecipe(raw, req.servings, stock);
         },
         (err) => err instanceof AiOutputError,
       );

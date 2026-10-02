@@ -2,10 +2,10 @@ import Anthropic from '@anthropic-ai/sdk';
 import { betaZodOutputFormat } from '@anthropic-ai/sdk/helpers/beta/zod';
 import type { z } from 'zod';
 import { HttpError } from '../../lib/http.js';
-import { RECIPE_SYSTEM, SUGGEST_SYSTEM, recipePrompt, suggestPrompt } from './prompts.js';
+import { ASK_SYSTEM, RECIPE_SYSTEM, SUGGEST_SYSTEM, askPrompt, recipePrompt, suggestPrompt } from './prompts.js';
 import type { AiConfig, AiTask } from './config.js';
 import { AiOutputError, type RecipeAI } from './provider.js';
-import { aiRecipeSchema, aiSuggestionsSchema } from './schemas.js';
+import { aiAnswerSchema, aiRecipeSchema, aiSuggestionsSchema } from './schemas.js';
 import { logUsage } from './usage.js';
 
 type Effort = 'low' | 'medium' | 'high' | 'xhigh' | 'max';
@@ -53,6 +53,7 @@ export function createAnthropicAI(options: { config: AiConfig; apiKey?: string }
   return {
     suggest: (ctx) => generate('suggest', aiSuggestionsSchema, SUGGEST_SYSTEM, suggestPrompt(ctx)),
     recipe: (ctx) => generate('recipe', aiRecipeSchema, RECIPE_SYSTEM, recipePrompt(ctx)),
+    ask: (ctx) => generate('ask', aiAnswerSchema, ASK_SYSTEM, askPrompt(ctx)),
   };
 }
 

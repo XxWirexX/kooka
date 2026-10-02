@@ -2,7 +2,7 @@ import { saveRecipeSchema, type Recipe, type SavedRecipe } from '@kooka/shared';
 import type { Db } from '../../db/index.js';
 import { annotateIngredients } from '../../lib/availability.js';
 import { notFound } from '../../lib/http.js';
-import type { InventoryRepository } from '../inventory/inventory.repository.js';
+import type { Kitchen } from '../../lib/kitchen.js';
 
 interface Row {
   id: number;
@@ -11,7 +11,7 @@ interface Row {
 }
 
 /** Livre de recettes : sauvegarde simple. Les statuts d'ingrédients sont recalculés à la lecture. */
-export function createCookbookService(db: Db, inventoryRepo: InventoryRepository) {
+export function createCookbookService(db: Db, kitchen: Kitchen) {
   const stmts = {
     list: db.prepare<[], Row>('SELECT * FROM saved_recipes ORDER BY created_at DESC, id DESC'),
     byId: db.prepare<[number], Row>('SELECT * FROM saved_recipes WHERE id = ?'),
@@ -24,7 +24,7 @@ export function createCookbookService(db: Db, inventoryRepo: InventoryRepository
     return {
       id: row.id,
       createdAt: row.created_at,
-      recipe: { ...recipe, ingredients: annotateIngredients(recipe.ingredients, inventoryRepo.list()) },
+      recipe: { ...recipe, ingredients: annotateIngredients(recipe.ingredients, kitchen.snapshot().stock) },
     };
   };
 

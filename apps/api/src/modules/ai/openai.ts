@@ -2,10 +2,10 @@ import OpenAI from 'openai';
 import { zodTextFormat } from 'openai/helpers/zod';
 import type { z } from 'zod';
 import { HttpError } from '../../lib/http.js';
-import { RECIPE_SYSTEM, SUGGEST_SYSTEM, recipePrompt, suggestPrompt } from './prompts.js';
+import { ASK_SYSTEM, RECIPE_SYSTEM, SUGGEST_SYSTEM, askPrompt, recipePrompt, suggestPrompt } from './prompts.js';
 import type { AiConfig, AiTask } from './config.js';
 import { AiOutputError, type RecipeAI } from './provider.js';
-import { aiRecipeSchema, aiSuggestionsSchema } from './schemas.js';
+import { aiAnswerSchema, aiRecipeSchema, aiSuggestionsSchema } from './schemas.js';
 import { logUsage } from './usage.js';
 
 /** Fournisseur OpenAI (API Responses + sorties structurées). Mêmes prompts et schémas que Claude. */
@@ -57,6 +57,7 @@ export function createOpenAIAI(options: { config: AiConfig; apiKey?: string; fet
   return {
     suggest: (ctx) => generate('suggest', aiSuggestionsSchema, SUGGEST_SYSTEM, suggestPrompt(ctx)),
     recipe: (ctx) => generate('recipe', aiRecipeSchema, RECIPE_SYSTEM, recipePrompt(ctx)),
+    ask: (ctx) => generate('ask', aiAnswerSchema, ASK_SYSTEM, askPrompt(ctx)),
   };
 }
 

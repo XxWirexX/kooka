@@ -5,7 +5,7 @@ import {
   type RecipeIngredient,
   type RecipeIngredientStatus,
 } from '@kooka/shared';
-import { Clock, Gauge, Hourglass, Lightbulb, Minus, Plus, Users } from 'lucide-react';
+import { ChefHat, Clock, Gauge, Hourglass, Lightbulb, Minus, Plus, Users } from 'lucide-react';
 import { useState } from 'react';
 import { formatMinutes, formatQuantity } from '../lib/format';
 
@@ -16,7 +16,15 @@ const STATUS: Record<RecipeIngredientStatus, { label: string; className: string 
   unknown: { label: 'À vérifier', className: 'bg-line/70 text-muted' },
 };
 
-export function RecipeView({ recipe: original, showStatus = true }: { recipe: Recipe; showStatus?: boolean }) {
+interface Props {
+  recipe: Recipe;
+  showStatus?: boolean;
+  /** Lance le mode cuisine avec le nombre de personnes choisi. */
+  onCook?: (servings: number) => void;
+  cookPending?: boolean;
+}
+
+export function RecipeView({ recipe: original, showStatus = true, onCook, cookPending }: Props) {
   const [servings, setServings] = useState(original.servings);
   const recipe = scaleRecipe(original, servings);
   const required = recipe.ingredients.filter((i) => !i.optional);
@@ -43,6 +51,18 @@ export function RecipeView({ recipe: original, showStatus = true }: { recipe: Re
         />
         <Stat icon={<Gauge size={18} />} label="Niveau" value={DIFFICULTY_LABELS[recipe.difficulty]} />
       </dl>
+
+      {onCook && (
+        <div className="mt-4">
+          <button
+            onClick={() => onCook(servings)}
+            disabled={cookPending}
+            className="flex w-full items-center justify-center gap-2 rounded-full bg-tomato py-4 font-semibold text-cream shadow-lg shadow-tomato/30 disabled:opacity-60"
+          >
+            <ChefHat size={20} /> Cuisiner cette recette
+          </button>
+        </div>
+      )}
 
       <section className="mt-8">
         <div className="mb-3 flex items-center justify-between">
@@ -113,6 +133,7 @@ export function RecipeView({ recipe: original, showStatus = true }: { recipe: Re
           </ul>
         </section>
       )}
+
     </article>
   );
 }

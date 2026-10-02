@@ -2,15 +2,16 @@ import type { Recipe, SavedRecipe, Suggestion } from '@kooka/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../api/client';
 
-export function useGeneratedRecipe(suggestion: Suggestion | null, ignoreInventory: boolean) {
+export function useGeneratedRecipe(suggestion: Suggestion | null, ignoreInventory: boolean, servings: number | null) {
   return useQuery({
-    queryKey: ['recipe', suggestion?.id],
+    queryKey: ['recipe', suggestion?.id, servings],
     queryFn: () =>
       api<Recipe>('/recipes/generate', {
         method: 'POST',
-        json: { suggestion, servings: 2, ignoreInventory },
+        json: { suggestion, servings, ignoreInventory },
       }),
-    enabled: suggestion !== null,
+    // On attend de connaître le nombre de personnes par défaut (préférences) avant de générer.
+    enabled: suggestion !== null && servings !== null,
     staleTime: Infinity,
     gcTime: 60 * 60 * 1000,
     retry: false,

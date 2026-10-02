@@ -13,7 +13,7 @@ const DEFAULT_MODELS = {
  * Réflexion par défaut : faible pour les deux appels, c'est le meilleur levier de coût.
  * Si les recettes perdent en qualité, passer AI_EFFORT_RECIPE=medium.
  */
-const DEFAULT_EFFORT = { suggest: 'low', recipe: 'low' } as const;
+const DEFAULT_EFFORT = { suggest: 'low', recipe: 'low', ask: 'low' } as const;
 
 type Provider = 'anthropic' | 'openai' | 'mock';
 
@@ -24,8 +24,8 @@ type Provider = 'anthropic' | 'openai' | 'mock';
  * - sinon, le mode simulé.
  *
  * Modèle et réflexion se règlent par type d'appel :
- * AI_MODEL_SUGGEST / AI_MODEL_RECIPE (sinon AI_MODEL, sinon le modèle par défaut),
- * AI_EFFORT_SUGGEST / AI_EFFORT_RECIPE.
+ * AI_MODEL_SUGGEST / AI_MODEL_RECIPE / AI_MODEL_ASK (sinon AI_MODEL, sinon le modèle par défaut),
+ * AI_EFFORT_SUGGEST / AI_EFFORT_RECIPE / AI_EFFORT_ASK.
  */
 export function createAIFromEnv(env: NodeJS.ProcessEnv = process.env): RecipeAI {
   const provider = resolveProvider(env);
@@ -43,10 +43,16 @@ export function createAIFromEnv(env: NodeJS.ProcessEnv = process.env): RecipeAI 
   const config: AiConfig = {
     suggest: { model: env.AI_MODEL_SUGGEST || model, effort: env.AI_EFFORT_SUGGEST || DEFAULT_EFFORT.suggest },
     recipe: { model: env.AI_MODEL_RECIPE || model, effort: env.AI_EFFORT_RECIPE || DEFAULT_EFFORT.recipe },
+    // Les questions en cuisine sont courtes : par défaut, le même modèle (léger) que les suggestions.
+    ask: {
+      model: env.AI_MODEL_ASK || env.AI_MODEL_SUGGEST || model,
+      effort: env.AI_EFFORT_ASK || DEFAULT_EFFORT.ask,
+    },
   };
   console.log(
     `[ai] ${provider} · suggestions : ${config.suggest.model} (${config.suggest.effort})` +
-      ` · recette : ${config.recipe.model} (${config.recipe.effort})`,
+      ` · recette : ${config.recipe.model} (${config.recipe.effort})` +
+      ` · questions : ${config.ask.model} (${config.ask.effort})`,
   );
   return provider === 'openai' ? createOpenAIAI({ config, apiKey }) : createAnthropicAI({ config, apiKey });
 }

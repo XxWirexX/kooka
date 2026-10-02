@@ -78,3 +78,16 @@ Code : `apps/api/src/modules/ai/` (fournisseur), `suggestions/` et `recipes/` (r
 - La **cohérence est vérifiée côté serveur** : temps total ≥ temps actif, temps passif = total − actif, nombre de portions dans des bornes raisonnables, quantité présente pour chaque ingrédient.
 - Les suggestions sont **mises en cache** selon un hash du contexte (inventaire + préférences + filtres) ; « Autres idées » envoie la liste des titres déjà proposés.
 - Les instructions libres de l'utilisateur sont insérées comme des préférences, jamais comme des règles système.
+
+## Préférences et basiques du placard
+
+- `preferences` : une seule ligne JSON (mono-utilisateur), validée par `preferencesSchema` ; les champs manquants reprennent les valeurs par défaut.
+- Le profil est envoyé à l'IA sous forme compacte (`describeProfile`). Les instructions libres sont citées entre guillemets comme des préférences : elles ne remplacent ni les règles ni le format de réponse.
+- Les basiques déclarés sont ajoutés à l'inventaire **uniquement pour le calcul des statuts** (`lib/kitchen.ts`) : un vrai ingrédient d'inventaire du même nom reste prioritaire (ex. « beurre » marqué épuisé).
+- Les préférences font partie des clés de cache : les modifier invalide les suggestions.
+
+## Mode cuisine
+
+- `cooking_sessions` : une ligne par préparation (recette figée en JSON, nombre de personnes, étape courante, dates). Plusieurs peuvent être actives : on les quitte et on y revient (meal prep). Terminer → historique ; abandonner → suppression.
+- Les minuteurs vivent côté navigateur (`lib/timers.ts`) et reposent sur une heure de fin : ils survivent aux changements de page, de recette et aux rechargements. L'alarme (son + vibration) est montée à la racine de l'app.
+- « Une question ? » : `POST /api/cooking/:id/ask`, avec la recette, l'étape courante et au plus 6 échanges précédents. Réponse courte (schéma `{ answer }`), modèle léger par défaut (`AI_MODEL_ASK`). Volontairement limité : pas de conversation libre.

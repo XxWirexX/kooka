@@ -82,5 +82,12 @@ export function createMockAI(): RecipeAI {
         tips: [],
       };
     },
+
+    async ask({ recipe, stepIndex, question }) {
+      const step = recipe.steps[stepIndex];
+      return {
+        answer: `(réponse simulée) Pour « ${question} » : à l'étape « ${step?.title ?? '?'} », fie-toi à l'aspect et goûte au fur et à mesure.`,
+      };
+    },
   };
 }
