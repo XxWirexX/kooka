@@ -2,11 +2,12 @@ import request from 'supertest';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createApp } from '../src/app.js';
 import { openDatabase } from '../src/db/index.js';
+import { createMockAI } from '../src/modules/ai/mock.js';
 
 let app: ReturnType<typeof createApp>;
 
 beforeEach(() => {
-  app = createApp(openDatabase(':memory:'));
+  app = createApp(openDatabase(':memory:'), { ai: createMockAI() });
 });
 
 describe('inventaire', () => {

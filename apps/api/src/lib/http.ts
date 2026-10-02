@@ -1,5 +1,6 @@
 import type { ErrorRequestHandler } from 'express';
 import { z } from 'zod';
+import { AiOutputError } from '../modules/ai/provider.js';
 
 export class HttpError extends Error {
   constructor(
@@ -19,6 +20,10 @@ export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
   }
   if (err instanceof HttpError) {
     res.status(err.status).json({ error: err.message });
+    return;
+  }
+  if (err instanceof AiOutputError) {
+    res.status(502).json({ error: "L'IA a renvoyé une réponse incohérente, réessaie" });
     return;
   }
   console.error(err);

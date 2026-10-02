@@ -10,7 +10,7 @@ Prérequis : Node.js ≥ 22.
 
 ```bash
 npm install
-cp .env.example .env     # facultatif pour l'instant
+cp .env.example .env     # puis renseigne ANTHROPIC_API_KEY (sans clé : mode simulé)
 npm run dev              # API sur :3001, front sur http://localhost:5173
 ```
 

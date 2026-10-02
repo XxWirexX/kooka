@@ -56,7 +56,16 @@ Règles métier :
 
 Les dates de péremption et l'état ouvert/fermé sont reportés après le MVP (ils seront ajoutés par migration).
 
-## Principes pour l'intégration de l'IA (étape 5)
+## Intégration de l'IA
+
+Code : `apps/api/src/modules/ai/` (fournisseur), `suggestions/` et `recipes/` (règles métier).
+
+- `RecipeAI` est une interface avec deux implémentations : `anthropic.ts` (vraie IA) et `mock.ts` (réponses factices, utilisées par les tests et quand aucune clé n'est configurée).
+- Sorties structurées : `client.beta.messages.parse` + schémas Zod (`schemas.ts`). Effort `low` pour les suggestions (rapidité), `medium` pour la recette complète.
+- Le paramètre `fallbacks: "default"` relance automatiquement la requête sur un modèle de repli si le modèle principal refuse à tort une demande.
+- Les prompts sont dans `prompts.ts`, en français ; l'inventaire est envoyé sous forme compacte (une ligne par ingrédient).
+
+### Principes
 
 - Le back construit le contexte (inventaire compact, préférences, filtres, suggestions déjà vues) et appelle l'IA ; le front ne parle jamais directement au modèle.
 - Les réponses sont en **JSON structuré**, validées par un schéma Zod ; en cas d'échec : une nouvelle tentative, puis une erreur claire.
