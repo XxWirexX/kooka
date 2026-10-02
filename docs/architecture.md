@@ -65,7 +65,8 @@ Code : `apps/api/src/modules/ai/` (fournisseur), `suggestions/` et `recipes/` (r
   - `anthropic.ts` — API Claude (`beta.messages.parse` + `betaZodOutputFormat`), modèle par défaut `claude-opus-5-5`, avec `fallbacks: "default"` (relance sur un modèle de repli en cas de refus injustifié) ;
   - `mock.ts` — réponses factices, utilisées par les tests et quand aucune clé n'est configurée.
 - Choix via `.env` : `AI_PROVIDER` (`openai`, `anthropic`, `mock`) et `AI_MODEL`. Sans `AI_PROVIDER`, le fournisseur dont la clé est présente est utilisé.
-- Les deux fournisseurs partagent les mêmes prompts et les mêmes schémas Zod (`schemas.ts`). Effort de raisonnement `low` pour les suggestions (rapidité), `medium` pour la recette complète.
+- Les deux fournisseurs partagent les mêmes prompts et les mêmes schémas Zod (`schemas.ts`).
+- **Coût** : modèle et niveau de réflexion se règlent séparément pour chaque appel (`AI_MODEL_SUGGEST`, `AI_MODEL_RECIPE`, `AI_EFFORT_SUGGEST`, `AI_EFFORT_RECIPE`), réflexion `low` par défaut. Chaque appel affiche dans le terminal ses tokens (entrée, sortie, dont réflexion), sa durée et son coût estimé (`usage.ts` ; estimation haute, la remise sur les tokens en cache n'est pas déduite).
 - Les prompts sont dans `prompts.ts`, en français ; l'inventaire est envoyé sous forme compacte (une ligne par ingrédient).
 
 ### Principes

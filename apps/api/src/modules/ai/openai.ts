@@ -3,31 +3,43 @@ import { zodTextFormat } from 'openai/helpers/zod';
 import type { z } from 'zod';
 import { HttpError } from '../../lib/http.js';
 import { RECIPE_SYSTEM, SUGGEST_SYSTEM, recipePrompt, suggestPrompt } from './prompts.js';
+import type { AiConfig, AiTask } from './config.js';
 import { AiOutputError, type RecipeAI } from './provider.js';
 import { aiRecipeSchema, aiSuggestionsSchema } from './schemas.js';
-
-type Effort = 'low' | 'medium' | 'high';
+import { logUsage } from './usage.js';
 
 /** Fournisseur OpenAI (API Responses + sorties structurées). Mêmes prompts et schémas que Claude. */
-export function createOpenAIAI(options: { model: string; apiKey?: string }): RecipeAI {
-  const client = new OpenAI({ apiKey: options.apiKey });
+export function createOpenAIAI(options: { config: AiConfig; apiKey?: string; fetch?: typeof fetch }): RecipeAI {
+  const client = new OpenAI({ apiKey: options.apiKey, fetch: options.fetch });
 
   async function generate<T extends z.ZodType>(
+    task: AiTask,
     schema: T,
-    name: string,
     system: string,
     prompt: string,
-    effort: Effort,
   ): Promise<z.infer<T>> {
+    const { model, effort } = options.config[task];
+    const started = Date.now();
     try {
       const res = await client.responses.parse({
-        model: options.model,
+        model,
         instructions: system,
         input: prompt,
-        reasoning: { effort },
+        reasoning: { effort: effort as OpenAI.ReasoningEffort },
         max_output_tokens: 16000,
-        text: { format: zodTextFormat(schema, name) },
+        text: { format: zodTextFormat(schema, task) },
       });
+      if (res.usage) {
+        logUsage({
+          task,
+          model,
+          inputTokens: res.usage.input_tokens,
+          cachedTokens: res.usage.input_tokens_details?.cached_tokens ?? 0,
+          outputTokens: res.usage.output_tokens,
+          reasoningTokens: res.usage.output_tokens_details?.reasoning_tokens ?? null,
+          ms: Date.now() - started,
+        });
+      }
       if (res.status === 'incomplete') {
         throw new AiOutputError(`Réponse incomplète (${res.incomplete_details?.reason ?? 'inconnu'})`);
       }
@@ -43,8 +55,8 @@ export function createOpenAIAI(options: { model: string; apiKey?: string }): Rec
   }
 
   return {
-    suggest: (ctx) => generate(aiSuggestionsSchema, 'suggestions', SUGGEST_SYSTEM, suggestPrompt(ctx), 'low'),
-    recipe: (ctx) => generate(aiRecipeSchema, 'recipe', RECIPE_SYSTEM, recipePrompt(ctx), 'medium'),
+    suggest: (ctx) => generate('suggest', aiSuggestionsSchema, SUGGEST_SYSTEM, suggestPrompt(ctx)),
+    recipe: (ctx) => generate('recipe', aiRecipeSchema, RECIPE_SYSTEM, recipePrompt(ctx)),
   };
 }
 
