@@ -1,0 +1,23 @@
+{
+  "name": "kooka",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace @kooka/api & npm run dev --workspace @kooka/web; wait",
+    "dev:api": "npm run dev --workspace @kooka/api",
+    "dev:web": "npm run dev --workspace @kooka/web",
+    "build": "npm run build --workspace @kooka/web",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}
