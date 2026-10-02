@@ -15,8 +15,6 @@ export function useUpdatePreferences() {
     mutationFn: (patch: Partial<Preferences>) => api<Preferences>('/preferences', { method: 'PATCH', json: patch }),
     onSuccess: (prefs) => {
       qc.setQueryData(KEY, prefs);
-      // Les suggestions dépendent du profil : on repart de zéro (aucune génération automatique).
-      qc.removeQueries({ queryKey: ['suggestions'] });
       qc.invalidateQueries({ queryKey: ['cookbook'] });
     },
   });

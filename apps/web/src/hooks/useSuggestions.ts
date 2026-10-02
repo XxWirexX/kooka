@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '../api/client';
 import { readJson, useStoredState, writeJson } from '../lib/storage';
 import { useInventory } from './useInventory';
+import { usePreferences } from './usePreferences';
 
 export const DEFAULT_FILTERS: SuggestionFilters = { maxMinutes: null, cuisine: null, ignoreInventory: false };
 
@@ -17,7 +18,9 @@ export function useFilters() {
  * en excluant les titres déjà vus. Un résultat déjà en cache pour ce contexte s'affiche directement.
  */
 export function useSuggestions(filters: SuggestionFilters) {
-  const { data: inventory, isSuccess } = useInventory();
+  const { data: inventory, isSuccess: inventoryLoaded } = useInventory();
+  const { preferences, isSuccess: prefsLoaded } = usePreferences();
+  const isSuccess = inventoryLoaded && prefsLoaded;
   const [session, setSession] = useStoredState('session', 'kooka:suggestion-session', {
     filtersKey: '',
     round: 0,
@@ -27,8 +30,10 @@ export function useSuggestions(filters: SuggestionFilters) {
   const filtersKey = JSON.stringify(filters);
   const current = session.filtersKey === filtersKey ? session : { filtersKey, round: 0, seen: [] };
   const inventoryKey = (inventory ?? []).map((i) => `${i.name}:${i.stockLevel}`).join('|');
+  // Le profil fait partie du contexte : le modifier demande une nouvelle action (« Relancer les idées »).
+  const prefsKey = JSON.stringify(preferences);
 
-  const queryKey = ['suggestions', filtersKey, filters.ignoreInventory ? '' : inventoryKey, current.round];
+  const queryKey = ['suggestions', filtersKey, filters.ignoreInventory ? '' : inventoryKey, prefsKey, current.round];
   const contextKey = JSON.stringify(queryKey);
   const [requested, setRequested] = useStoredState('session', 'kooka:suggestions-requested', '');
 
@@ -52,7 +57,9 @@ export function useSuggestions(filters: SuggestionFilters) {
     const titles = query.data?.map((s) => s.title) ?? [];
     const next = { filtersKey, round: current.round + 1, seen: [...current.seen, ...titles].slice(-60) };
     setSession(next);
-    setRequested(JSON.stringify(['suggestions', filtersKey, filters.ignoreInventory ? '' : inventoryKey, next.round]));
+    setRequested(
+      JSON.stringify(['suggestions', filtersKey, filters.ignoreInventory ? '' : inventoryKey, prefsKey, next.round]),
+    );
   };
 
   const start = () => setRequested(contextKey);
