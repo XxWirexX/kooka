@@ -1,4 +1,4 @@
-import { Compass, RefreshCw, Refrigerator } from 'lucide-react';
+import { Compass, RefreshCw, Refrigerator, Sparkles } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { FilterBar } from '../components/FilterBar';
@@ -15,7 +15,8 @@ const LOADING_MESSAGES = [
 
 export function HomePage() {
   const [filters, setFilters] = useFilters();
-  const { data, isFetching, error, refetch, more, inventoryCount, isSuccess } = useSuggestions(filters);
+  const { data, isFetching, error, refetch, more, start, idle, contextChanged, inventoryCount, isSuccess } =
+    useSuggestions(filters);
   const discovery = filters.ignoreInventory ?? false;
   const needsInventory = !discovery && inventoryCount === 0;
 
@@ -26,6 +27,13 @@ export function HomePage() {
 
       {needsInventory ? (
         <EmptyInventory onDiscover={() => setFilters({ ...filters, ignoreInventory: true })} />
+      ) : idle ? (
+        <StartCard
+          onStart={start}
+          discovery={discovery}
+          inventoryCount={inventoryCount}
+          contextChanged={contextChanged}
+        />
       ) : (
         <>
           <div className="space-y-4">
@@ -69,6 +77,37 @@ function LoadingMessage() {
     return () => clearInterval(t);
   }, []);
   return <p className="text-center text-sm text-muted">{LOADING_MESSAGES[i]}</p>;
+}
+
+function StartCard({
+  onStart,
+  discovery,
+  inventoryCount,
+  contextChanged,
+}: {
+  onStart: () => void;
+  discovery: boolean;
+  inventoryCount: number;
+  contextChanged: boolean;
+}) {
+  return (
+    <section className="rounded-3xl bg-tomato p-6 text-cream shadow-lg shadow-tomato/20">
+      <h2 className="font-display text-xl font-semibold">
+        {contextChanged ? 'Tes critères ont changé' : discovery ? 'Envie de nouveauté ?' : 'On cuisine quoi ?'}
+      </h2>
+      <p className="mt-1 text-sm text-cream/85">
+        {discovery
+          ? 'Kooka te propose 3 plats à découvrir, sans tenir compte de ton inventaire.'
+          : `Kooka te propose 3 plats à partir de tes ${inventoryCount} ingrédient${inventoryCount > 1 ? 's' : ''}.`}
+      </p>
+      <button
+        onClick={onStart}
+        className="mt-5 inline-flex items-center gap-2 rounded-full bg-cream px-5 py-3 text-sm font-semibold text-tomato-dark"
+      >
+        <Sparkles size={18} /> {contextChanged ? 'Relancer les idées' : 'Trouver des idées'}
+      </button>
+    </section>
+  );
 }
 
 function EmptyInventory({ onDiscover }: { onDiscover: () => void }) {
