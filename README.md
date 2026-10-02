@@ -10,7 +10,7 @@ Prérequis : Node.js ≥ 22.
 
 ```bash
 npm install
-cp .env.example .env     # puis renseigne ANTHROPIC_API_KEY (sans clé : mode simulé)
+cp .env.example .env     # puis renseigne OPENAI_API_KEY ou ANTHROPIC_API_KEY (sans clé : mode simulé)
 npm run dev              # API sur :3001, front sur http://localhost:5173
 ```
 
@@ -28,7 +28,7 @@ Pour tester sur ton téléphone : même réseau Wi-Fi, puis ouvre l'URL « Netwo
 
 ```
 apps/
-  api/      Express 5 + SQLite (better-sqlite3) — logique métier, validation, appels IA
+  api/      Express 5 + SQLite (better-sqlite3) — logique métier, validation, appels IA (OpenAI ou Claude)
   web/      React 19 + Vite + Tailwind 4 — interface mobile-first
 packages/
   shared/   Schémas Zod et types partagés entre le front et l'API

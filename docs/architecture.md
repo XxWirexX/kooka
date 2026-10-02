@@ -13,7 +13,7 @@ Objectif : un prototype réellement utilisable, propre et évolutif, sans infras
 | Style      | **Tailwind CSS 4** + lucide-react                     | Itération rapide sur le design mobile ; les couleurs de la marque sont des tokens dans `apps/web/src/index.css`. |
 | Back       | **Express 5**                                         | Stack que tu connais déjà, et suffisante. Express 5 propage nativement les erreurs des handlers async. |
 | Base       | **SQLite** (better-sqlite3)                           | Un fichier, aucun serveur à gérer, synchrone et rapide. Migrations SQL versionnées via `PRAGMA user_version`. Passage à PostgreSQL possible plus tard (SQL standard). |
-| IA         | **API Claude** (Anthropic), sorties JSON structurées  | Choix du modèle à l'étape 5. Appels uniquement côté serveur : la clé ne quitte jamais le back. |
+| IA         | **OpenAI ou Claude** (au choix), sorties JSON structurées | Fournisseur et modèle choisis dans `.env`. Appels uniquement côté serveur : la clé ne quitte jamais le back. |
 | Tests      | **Vitest + Supertest**                                | Tests d'API rapides sur une base SQLite en mémoire. |
 
 ### Ce qui a été volontairement écarté
@@ -60,9 +60,12 @@ Les dates de péremption et l'état ouvert/fermé sont reportés après le MVP (
 
 Code : `apps/api/src/modules/ai/` (fournisseur), `suggestions/` et `recipes/` (règles métier).
 
-- `RecipeAI` est une interface avec deux implémentations : `anthropic.ts` (vraie IA) et `mock.ts` (réponses factices, utilisées par les tests et quand aucune clé n'est configurée).
-- Sorties structurées : `client.beta.messages.parse` + schémas Zod (`schemas.ts`). Effort `low` pour les suggestions (rapidité), `medium` pour la recette complète.
-- Le paramètre `fallbacks: "default"` relance automatiquement la requête sur un modèle de repli si le modèle principal refuse à tort une demande.
+- `RecipeAI` est une interface avec trois implémentations :
+  - `openai.ts` — API Responses d'OpenAI (`responses.parse` + `zodTextFormat`), modèle par défaut `gpt-5.5` ;
+  - `anthropic.ts` — API Claude (`beta.messages.parse` + `betaZodOutputFormat`), modèle par défaut `claude-opus-5-5`, avec `fallbacks: "default"` (relance sur un modèle de repli en cas de refus injustifié) ;
+  - `mock.ts` — réponses factices, utilisées par les tests et quand aucune clé n'est configurée.
+- Choix via `.env` : `AI_PROVIDER` (`openai`, `anthropic`, `mock`) et `AI_MODEL`. Sans `AI_PROVIDER`, le fournisseur dont la clé est présente est utilisé.
+- Les deux fournisseurs partagent les mêmes prompts et les mêmes schémas Zod (`schemas.ts`). Effort de raisonnement `low` pour les suggestions (rapidité), `medium` pour la recette complète.
 - Les prompts sont dans `prompts.ts`, en français ; l'inventaire est envoyé sous forme compacte (une ligne par ingrédient).
 
 ### Principes
